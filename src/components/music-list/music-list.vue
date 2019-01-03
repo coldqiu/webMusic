@@ -17,7 +17,7 @@
         <scroll @scroll="scroll" :listenScroll="listenScroll" :probeType="probeType" :data="songs" class="list"
                 ref="list">
             <div class="song-list-wrapper">
-                <song-list :songs="songs"></song-list>
+                <song-list @select="selectItem" :songs="songs"></song-list>
             </div>
         </scroll>
         <div class="loading-container" v-show="!songs.length">
@@ -31,6 +31,8 @@
   import SongList from 'base/song-list/song-list'
   import {prefixStyle} from 'common/js/dom'
   import Loading from 'base/loading/loading'
+  import {mapActions} from 'vuex'
+
   const transform = prefixStyle('transform')
   const backdrop = prefixStyle('backdrop-filter')
   const RESERVED_HEIGHT = 40
@@ -78,7 +80,19 @@
       },
       back() {
         this.$router.back()
-      }
+      },
+      // 在歌手详情页点击任意一首歌，整个列表都加入播放列表；
+      // fullScreen设置为true,playlist,sequence_list,currentIndex,
+      // 一个动作中执行多个mutation,使用actions封装,
+      selectItem(item, index) {
+        this.selectPlay({
+          list: this.songs,
+          index
+        })
+      },
+      ...mapActions([
+        'selectPlay'
+      ])
     },
     watch: {
       scrollY(newY) {
