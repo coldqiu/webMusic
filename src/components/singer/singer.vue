@@ -1,8 +1,8 @@
 <template>
-  <div class="singer">
-    <list-view @select="selectSinger" :data="singers"></list-view>
-    <router-view></router-view>
-  </div>
+    <div class="singer">
+        <list-view @select="selectSinger" :data="singers"></list-view>
+        <router-view></router-view>
+    </div>
 </template>
 
 <script type="text/ecmascript-6">
@@ -46,7 +46,6 @@
             )
           }
           const key = item.Findex
-//          console.log("key:", key)
           if (!map[key]) {
             map[key] = {
               title: key,
@@ -83,12 +82,9 @@
           path: `/singer/${singer.id}`
         })
         // 提交 mutations 实际是执行了mutations.js 中的[types.SET_SINGER]函数
-         this.setSinger(singer)
+        this.setSinger(singer)
       },
-      // 做映射， 不再methods 属性也可以
-      ...mapMutations({
-        setSinger: 'SET_SINGER'
-      })
+      ...mapMutations({setSinger: 'SET_SINGER'})
     },
     components: {
       ListView
@@ -97,9 +93,9 @@
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
-  .singer
-    position: fixed
-    top: 88px
-    bottom: 0
-    width: 100%
+    .singer
+        position: fixed
+        top: 88px
+        bottom: 0
+        width: 100%
 </style>

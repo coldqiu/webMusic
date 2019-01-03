@@ -1,7 +1,7 @@
 <template>
-  <transition name="slider">
-    <music-list :songs="songs" :title="title" :bgImage="bgImage"></music-list>
-  </transition>
+    <transition name="slider">
+        <music-list :songs="songs" :title="title" :bgImage="bgImage"></music-list>
+    </transition>
 </template>
 
 <script type="text/ecmascript-6">
@@ -11,6 +11,7 @@
   import {ERR_OK} from 'api/config'
   import {createSong} from 'common/js/song'
   import MusicList from 'components/music-list/music-list'
+
   export default {
     data() {
       return {
@@ -18,13 +19,12 @@
       }
     },
     computed: {
-      // 'singer' 即时getters.js 中的singer函数，获取歌手信息
-      ...mapGetters([
-        'singer'
-      ]),
       title() {
         return this.singer.name
       },
+      ...mapGetters([
+        'singer'
+      ]),
       bgImage() {
         return this.singer.avatar
       }
@@ -66,14 +66,14 @@
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
-  @import "~common/stylus/variable"
+    @import "~common/stylus/variable"
 
-  .slider-enter-active, .slider-leave-active
-    transition: all 0.3s
+    .slider-enter-active, .slider-leave-active
+        transition: all 0.3s
 
-  .slider-enter, .slider-leave-to {
-    transform: translate3d(100%, 0, 0)
-  }
+    .slider-enter, .slider-leave-to {
+        transform: translate3d(100%, 0, 0)
+    }
 
-  /**/
+    /**/
 </style>
