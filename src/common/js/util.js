@@ -1,4 +1,4 @@
-// 遍历一次数组将其顺讯打乱
+// 遍历一次数组将其顺序打乱
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min)

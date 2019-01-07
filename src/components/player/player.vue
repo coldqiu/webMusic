@@ -30,13 +30,13 @@
           <div class="progress-wrapper">
             <span class="time time-l">{{format(currentTime)}}</span>
             <div class="progress-bar-wrapper">
-              <progress-bar></progress-bar>
+              <progress-bar :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
             </div>
             <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
           <div class="operators">
-            <div class="icon i-left">
-              <i class="icon-sequence"></i>
+            <div class="icon i-left" @click="changeMode">
+              <i :class="iconMode"></i>
             </div>
             <div class="icon i-left" :class="disableCls">
               <i @click="prev" class="icon-prev"></i>
@@ -56,15 +56,17 @@
     </transition>
     <transition name="mini">
       <div class="mini-player" v-show="!fullScreen" @click="open">
-        <div class="icon" :class="cdCls">
-          <img :src="currentSong.image" width="40" height="40" alt="">
+        <div class="icon">
+          <img :class="cdCls" :src="currentSong.image" width="40" height="40" alt="">
         </div>
         <div class="text">
           <h2 class="name" v-html="currentSong.name"></h2>
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
-          <i @click.stop="togglePlaying" :class="miniIcon"></i>
+          <progress-circle :radius="32" :percent="percent">
+            <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
+          </progress-circle>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
@@ -83,6 +85,9 @@
   import animations from 'create-keyframe-animation'
   import { prefixStyle } from 'common/js/dom'
   import ProgressBar from 'base/progress-bar/progress-bar'
+  import ProgressCircle from 'base/progress-circle/progress-circle'
+  import {playMode} from 'common/js/config'
+  import {shuffle} from 'common/js/util'
 
   const transform = prefixStyle('transform')
 
@@ -90,7 +95,8 @@
     data() {
       return {
         songReady: false,
-        currentTime: 0
+        currentTime: 0,
+        radius: 32
       }
     },
     computed: {
@@ -99,7 +105,9 @@
         'playlist',
         'currentSong',
         'playing',
-        'currentIndex'
+        'currentIndex',
+        'mode',
+        'sequenceList'
       ]),
       playIcon() {
         return this.playing ? 'icon-pause' : 'icon-play'
@@ -112,6 +120,13 @@
       },
       disableCls() {
         return this.songReady ? '' : 'disable'
+      },
+      percent() {
+        return this.currentTime / this.currentSong.duration
+      },
+      iconMode() {
+        return this.mode === playMode.sequence ? 'icon-sequence' : this.mode ===
+          playMode.loop ? 'icon-loop': 'icon-random'
       }
     },
     methods: {
@@ -122,9 +137,15 @@
         this.setFullScreen(true)
       },
       togglePlaying() {
-//        if (!this.songReady) {
+        if (!this.songReady) {
 //          return
-//        }
+          this.songReady = !this.songReady
+          // 快速点点击会将 this.songReady 置为false,不明白为什么置为false的，
+          // 是双击事件吗？！
+          // 报错 ：[Intervention] Unable to preventDefault
+          // inside passive event listener due to target
+          // being treated as passive. See <URL>
+        }
         this.setPlayingState(!this.playing)
       },
       // currentSong由currentIndex计算而来，改变currentIndex
@@ -141,7 +162,7 @@
           this.togglePlaying()
         }
         this.songReady = false
-        console.log("this.songReady", this.songReady)
+        console.log("this.playing:", this.playing)
       },
       next() {
         if (!this.songReady) {
@@ -156,15 +177,17 @@
           this.togglePlaying()
         }
         this.songReady = false
-        console.log("this.songReady", this.songReady)
       },
       ready() {
         this.songReady = true
+        console.log('this.ready')
       },
       error() {
         this.songReady = true
+        console.log('this.error')
       },
       updateTime(e) {
+        // 当前歌曲播放时间
         this.currentTime = e.target.currentTime
       },
       _pad(num, n = 2) {
@@ -246,15 +269,55 @@
       ...mapMutations({
         setFullScreen: 'SET_FULL_SCREEN',
         setPlayingState: 'SET_PLAYING_STATE',
-        setCurrentIndex: 'SET_CURRENT_INDEX'
+        setCurrentIndex: 'SET_CURRENT_INDEX',
+        setPlayMode: 'SET_PLAY_MODE',
+        setPlayList: 'SET_PLAY_LIST'
       }),
-
+      onProgressBarChange(percent) {
+        console.log("onProgressBarChange", percent)
+        this.$refs.audio.currentTime = this.currentSong.duration * percent
+        if (!this.playing) {
+          this.togglePlaying()
+        }
+      },
+      changeMode() {
+        const mode = (this.mode + 1) % 3
+        this.setPlayMode(mode)
+        console.log("mode:", mode)
+        let list = null
+        if (mode === playMode.random) {
+          list = shuffle(this.sequenceList)
+          console.log("random")
+        } else {
+          list = this.sequenceList
+          console.log("sequenceList")
+        }
+        this.resetCurrentIndex(list)
+        this.setPlayList = list
+      },
+      resetCurrentIndex(list) {
+        // 在新的的list 中找到当前歌曲的 新的currentIndex并返回
+        let index = list.findIndex((item) => {
+          return item.id === this.currentSong.id
+        })
+        this.setCurrentIndex(index)
+      }
     },
     watch: {
-      currentSong() {
+      currentSong(newSong, oldSong) {
+        console.log(newSong.id, this.currentSong.id)
+        if (oldSong.id === newSong.id){
+          return
+        }
         this.$nextTick(() => {
           this.$refs.audio.play()
+          console.log("this.songReady2:", this.currentSong)
+
         })
+//        setTimeout(() => {
+//          this.$refs.audio.play()
+//          console.log("this.is.watch.setTimeout")
+//        }, 20)
       },
       // 监听mapGetters中的 playing 的状态
       playing(newPlaying) {
@@ -264,13 +327,14 @@
         })
         // 快速切歌会造成 ，关闭歌曲后重置this.songReady
 //        this.songReady = true
-        if (this.playing) {
-          this.songReady = true
-        }
+//        if (this.playing) {
+//          this.songReady = true
+//        }
       }
     },
     components: {
-      ProgressBar
+      ProgressBar,
+      ProgressCircle
     }
   }
 </script>
