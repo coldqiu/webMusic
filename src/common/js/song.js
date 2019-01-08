@@ -1,5 +1,9 @@
 // 定义歌曲 类
 // 代码集中方便管理；扩展性好；
+import {getLyric} from 'api/song'
+import {ERR_OK} from 'api/config'
+import {Base64} from 'js-base64'
+
 export default class Song {
   constructor({id, mid, singer, name, album, duration, image, url}) {
     this.id = id
@@ -11,7 +15,27 @@ export default class Song {
     this.image = image
     this.url = url
   }
+
+  getLyric() {
+    if (this.lyric) {
+      return Promise.resolve(this.lyric)
+    }
+    return new Promise((resolve, reject) => {
+      getLyric(this.mid).then((res) => {
+        if (res.retcode === ERR_OK) {
+          this.lyric = Base64.decode(res.lyric)
+          // console.log("this.lyric", this.lyric)
+          resolve(this.lyric)
+        } else {
+          reject('no lyric')
+        }
+      })
+    })
+
+
+  }
 }
+
 
 
 export function createSong(musicData) {

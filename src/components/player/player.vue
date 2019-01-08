@@ -76,6 +76,7 @@
     <audio ref="audio" :src="currentSong.url" @canplay="ready"
            @error="error"
            @timeupdate="updateTime"
+           @ended="end"
     ></audio>
   </div>
 </template>
@@ -88,15 +89,17 @@
   import ProgressCircle from 'base/progress-circle/progress-circle'
   import {playMode} from 'common/js/config'
   import {shuffle} from 'common/js/util'
+  import Lyric from 'lyric-parser'
 
   const transform = prefixStyle('transform')
-
+  // 歌曲使用本地音频实际时长与线上获取的歌曲时长不同；
   export default {
     data() {
       return {
-        songReady: false,
+//        songReady: false,
         currentTime: 0,
-        radius: 32
+        radius: 32,
+        currentLyric: null
       }
     },
     computed: {
@@ -119,7 +122,7 @@
         return this.playing ? 'play': 'play pause'
       },
       disableCls() {
-        return this.songReady ? '' : 'disable'
+//        return this.songReady ? '' : 'disable'
       },
       percent() {
         return this.currentTime / this.currentSong.duration
@@ -137,22 +140,23 @@
         this.setFullScreen(true)
       },
       togglePlaying() {
-        if (!this.songReady) {
-//          return
-          this.songReady = !this.songReady
+//        if (!this.songReady) {
+////          return
+//          this.songReady = !this.songReady
           // 快速点点击会将 this.songReady 置为false,不明白为什么置为false的，
           // 是双击事件吗？！
           // 报错 ：[Intervention] Unable to preventDefault
           // inside passive event listener due to target
           // being treated as passive. See <URL>
-        }
+          // 关于songReady标志位还是 有问题...
+//        }
         this.setPlayingState(!this.playing)
       },
       // currentSong由currentIndex计算而来，改变currentIndex
       prev() {
-        if (!this.songReady) {
-          return
-        }
+//        if (!this.songReady) {
+//          return
+//        }
         let index = this.currentIndex -1
         if (index === -1) {
           index = this.playlist.length
@@ -165,9 +169,9 @@
         console.log("this.playing:", this.playing)
       },
       next() {
-        if (!this.songReady) {
-          return
-        }
+//        if (!this.songReady) {
+//          return
+//        }
         let index = this.currentIndex + 1
         if (index === this.playlist.length) {
           index = 0
@@ -179,12 +183,24 @@
         this.songReady = false
       },
       ready() {
-        this.songReady = true
-        console.log('this.ready')
+//        this.songReady = true
+//        console.log('this.ready')
       },
       error() {
-        this.songReady = true
-        console.log('this.error')
+//        this.songReady = true
+//        console.log('this.error')
+      },
+      end() {
+        // 歌曲播放完毕
+        if (this.mode === playMode.loop) {
+          this.loop()
+        } else {
+          this.next()
+        }
+      },
+      loop() {
+        this.$refs.audio.currentTime = 0
+        this.$refs.audio.play()
       },
       updateTime(e) {
         // 当前歌曲播放时间
@@ -301,6 +317,13 @@
           return item.id === this.currentSong.id
         })
         this.setCurrentIndex(index)
+      },
+      getLyric() {
+        this.currentSong.getLyric().then((res) =>{
+          console.log("res....player.vue:", res)
+          this.currentLyric = new Lyric(res)
+          console.log("this.currentLyric:", this.currentLyric)
+        })
       }
     },
     watch: {
@@ -311,13 +334,10 @@
         }
         this.$nextTick(() => {
           this.$refs.audio.play()
-          console.log("this.songReady2:", this.currentSong)
+          this.getLyric()
 
         })
-//        setTimeout(() => {
-//          this.$refs.audio.play()
-//          console.log("this.is.watch.setTimeout")
-//        }, 20)
+
       },
       // 监听mapGetters中的 playing 的状态
       playing(newPlaying) {
