@@ -2,7 +2,7 @@ import {commParams, options} from "./config"
 import axios from 'axios'
 
 export function getLyric(mid) {
-  const url = 'http://127.0.0.1:8080/api/getLyric'
+  const url = 'http://127.0.0.1:5000/api/getLyric'
   const data = Object.assign({}, commParams, {
     '-': 'MusicJsonCallback_lrc',
     pcachetime: +new Date(),

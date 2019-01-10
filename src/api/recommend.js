@@ -15,7 +15,7 @@ export function getRecommend() {
 
 export function getDiscList() {
   //const url = 'https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg'
-  const url = 'http://127.0.0.1:8080/api/getDiscList'
+  const url = 'http://127.0.0.1:5000/api/getDiscList'
   const data = Object.assign({}, commParams, {
     g_tk: '5381',
     inCharset: 'utf-8',

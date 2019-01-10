@@ -473,6 +473,7 @@
           // 清除上一首歌的 歌词定时器
           this.currentLyric.stop()
         }
+        // 不理解这里为什么要延时
         setTimeout(() => {
           this.$refs.audio.play()
           this.getLyric()

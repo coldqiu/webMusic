@@ -76,6 +76,9 @@
       }
     },
     methods: {
+      refresh() {
+        this.$refs.listview.refresh()
+      },
       onShortcutTouchStart(e) {
         let anchorIndex = getData(e.target, 'index')
         let firstTouch = e.touches[0]
@@ -112,7 +115,6 @@
         this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)
       },
       scroll(pos) {
-        console.log("pos:", pos)
         this.scrollY = pos.y
       },
       _calculateHeight() {
@@ -144,7 +146,6 @@
       scrollY(newY) {
         // 计算左侧当前scrollY在listHeight数组的index,与右侧的index 对应；
         const listHeight = this.listHeight
-        console.log("this.listHeight:", this.listHeight)
         // 当滚动到顶部，newY>0
         if (newY > 0) {
           this.currentIndex = 0
