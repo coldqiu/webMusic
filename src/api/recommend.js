@@ -40,3 +40,32 @@ export function getDiscList() {
     return Promise.resolve(res.data)
   })
 }
+
+export function getSongList(disstid) {
+  const url = 'http://127.0.0.1:5000/api/getSongList'
+  // const url = 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg'
+  const data = Object.assign({}, commParams, {
+    disstid,
+    type: 1,
+    json: 1,
+    utf8: 1,
+    onlysong: 0,
+    inCharset: 'utf8',
+    notice: 0,
+    platform: 'yqq.json',
+    hostUin: 0,
+    g_tk: '5381',
+    needNewCode: 0,
+  })
+  // return jsonp(url, data, options)
+
+  return axios.get(url, {
+    params: data
+  }).then((res) => {
+    let num1 = res.data.indexOf('(')
+    let num2 = res.data.length-1
+    let longString = res.data.substring(num1 + 1, num2)
+    let resultData = JSON.parse(longString)
+    return Promise.resolve(resultData)
+  })
+}

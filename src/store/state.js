@@ -7,7 +7,8 @@ const state = {
   playlist: [],
   sequenceList: [],
   mode: playMode.sequence,
-  currentIndex: -1
+  currentIndex: -1,
+  disc: {}
 }
 // 不需要currentSong, playlist+currentIndex=currentSong
 // currentSong 放在getters中

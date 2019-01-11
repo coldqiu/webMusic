@@ -31,6 +31,17 @@ module.exports = {
           '^/api/getLyric': ''
         }
       },
+      '/api/getSongList': {
+        target: 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg',
+        bypass: function (req, res, proxyOptions) {
+          // req.headers.referer = 'https://c.y.qq.com';
+          req.headers.referer = 'https://y.qq.com/n/yqq/playsquare';
+          req.headers.host = 'c.y.qq.com';
+        },
+        pathRewrite: {
+          '^/api/getSongList': ''
+        }
+      },
     },
 
     // Various Dev Server settings
