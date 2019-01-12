@@ -42,6 +42,26 @@ module.exports = {
           '^/api/getSongList': ''
         }
       },
+      '/api/getTopList': {
+        target: 'https://c.y.qq.com/v8/fcg-bin/fcg_myqq_toplist.fcg',
+        bypass: function (req, res, proxyOptions) {
+          req.headers.referer = 'https://c.y.qq.com';
+          req.headers.host = 'c.y.qq.com';
+        },
+        pathRewrite: {
+          '^/api/getTopList': ''
+        }
+      },
+      '/api/getMusicList': {
+        target: 'https://c.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg',
+        bypass: function (req, res, proxyOptions) {
+          req.headers.referer = 'https://y.qq.com/w/';
+          req.headers.host = 'c.y.qq.com';
+        },
+        pathRewrite: {
+          '^/api/getMusicList': ''
+        }
+      }
     },
 
     // Various Dev Server settings
