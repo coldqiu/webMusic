@@ -57,7 +57,7 @@ export function createSong(musicData) {
 // ok http://dl.stream.qqmusic.qq.com/C400003mAan70zUy5O.m4a?guid=2095157176&vkey=55F7BAC4731A753E06F81D2D2BB2A67B2C261466C71E4226612CB004248242715A62327ADADA7953D343A959F6F69550C124F19C528F2540&uin=0&fromtag=3&r=9457220248460558
 
 // 多个歌手用'/'隔开
-function filterSinger(singer) {
+export function filterSinger(singer) {
   let ret = []
   if (!singer) {
     return ''
