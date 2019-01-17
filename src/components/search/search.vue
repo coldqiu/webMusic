@@ -1,9 +1,9 @@
 <template>
   <div class="search">
     <div class="search-box-wrapper">
-      <search-box ref="searchBox"></search-box>
+      <search-box @query="onQueryChange" ref="searchBox"></search-box>
     </div>
-    <div class="shortcut-wrapper">
+    <div class="shortcut-wrapper" v-show="!query">
       <div class="shortcut">
         <div class="hot-key">
           <h1 class="title">热门搜索</h1>
@@ -15,9 +15,10 @@
         </div>
       </div>
     </div>
-    <div class="search-result">
-      <suggest :query="query"></suggest>
+    <div class="search-result" v-show="query">
+      <suggest @listScroll="blurInput" :query="query"></suggest>
     </div>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -46,8 +47,19 @@
           })
         },
         addQuery(query) {
+          // 父组件调用子组件方法， 设置search-box的query
           this.$refs.searchBox.setQuery(query)
+          // 并可以不监听监听上的<search-box>事件query，直接个this.query赋值，
+          // search-box 上有清除 query 的函数
+
+        },
+        onQueryChange(query) {
+          // @query="onQueryChange", 不写参数！
+          console.log("onQueryChange事件触发", query)
           this.query = query
+        },
+        blurInput() {
+          this.$refs.searchBox.blur()
         }
       },
       components: {

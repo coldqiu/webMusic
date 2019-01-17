@@ -1,12 +1,13 @@
 <template>
   <div class="search-box">
     <i class="icon-search"></i>
-    <input type="text" class="box" v-model="query" :placeholder="placeholder">
+    <input ref="query" type="text" class="box" v-model="query" :placeholder="placeholder">
     <i @click="clear" v-show="query" class="icon-dismiss"></i>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import {debounce} from 'common/js/util'
   export default {
     props: {
       placeholder: {
@@ -25,13 +26,18 @@
       },
       setQuery(query) {
         this.query = query
+      },
+      blur() {
+        this.$refs.query.blur()
       }
     },
     created() {
       // 不直接使用watch()方法的原因
-      this.$watch('query', (newQuery) => {
+      // 不希望在修改query变化时持续的发请求
+      this.$watch('query', debounce((newQuery) => {
         this.$emit('query', newQuery)
-      })
+        console.log("search.query事件触发", newQuery)
+      }, 600))
     }
   }
 </script>

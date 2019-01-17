@@ -23,6 +23,14 @@
       listenScroll: {
         type: Boolean,
         default: false
+      },
+      pullup: {
+        type: Boolean,
+        default: false
+      },
+      beforeScroll: {
+        type: Boolean,
+        default: false
       }
     },
     mounted() {
@@ -46,6 +54,21 @@
             me.$emit('scroll', pos)
           })
         }
+        if (this.pullup) {
+          // scrollEnd 是滚动结束事件
+          this.scroll.on('scrollEnd', () => {
+            if (this.scroll.y <= (this.scroll.maxScrollY) + 50) {
+              // 滚动到 距离底部 50 以内后派发 事件 scrollToEnd
+              this.$emit('scrollToEnd')
+            }
+          })
+        }
+        if (this.beforeScroll) {
+          this.scroll.on('beforeScrollStart', () => {
+            this.$emit('beforeScroll')
+          })
+        }
+
       },
       // scroll 组件代理better-scroll的方法
       enable() {

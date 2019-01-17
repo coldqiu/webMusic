@@ -1,24 +1,42 @@
 <template>
-  <div class="suggest">
+  <scroll :data="result"
+          :pullup="pullup"
+          @scrollToEnd="searchMore"
+          class="suggest"
+          ref="suggest"
+          :beforeScroll="beforeScroll"
+          @beforeScroll="listScroll"
+  >
     <ul class="suggest-list">
-      <li class="suggest-item" v-for="item in result">
+      <li @click="selectItem(item)" class="suggest-item" v-for="item in result">
         <div class="icon">
-          <i :classs="getIconCls(item)"></i>
+          <i :class="getIconCls(item)"></i>
         </div>
         <div class="name">
           <p class="text" v-html="getDisplayName(item)"></p>
         </div>
       </li>
+      <loading v-show="hasMore" title="More..."></loading>
     </ul>
-  </div>
+    <div class="no-result-wrapper">
+      <no-result v-show="!hasMore && !result.length" :title="title"></no-result>
+    </div>
+  </scroll>
 </template>
 
 <script type="text/ecmascript-6">
   import {search} from 'api/search'
   import {ERR_OK} from 'api/config'
-  import {filterSinger} from 'common/js/song'
-  const TYPE_SINGER = 'singer'
+  import {createSong} from 'common/js/song'
+  import Scroll from 'base/scroll/scroll'
+  import Loading from 'base/loading/loading'
+  import Singer from 'common/js/singer'
+  import {mapMutations, mapActions} from 'vuex'
+  import NoResult from 'base/no-result/no-result'
 
+
+  const TYPE_SINGER = 'singer'
+  const perpage = 30
   export default {
     props: {
       query: {
@@ -33,27 +51,43 @@
     data() {
       return {
         page: 1,
-        result: []
+        result: [],
+        pullup: true,
+        hasMore: true,
+        title: 'no-result,搜索暂无结果',
+        beforeScroll: true
       }
     },
     methods: {
       // 请求服务端数据
       search() {
-        console.log("search:function")
-        search(this.query, this.page, this.showSinger).then((res) => {
-          console.log("res-suggest.vue", res)
+        // 搜索内容改变时重置scroll的位置
+        this.page = 1
+        this.$refs.suggest.scrollTo(0, 0)
+        // hasMore 为服务器上是否还有数据的标志位
+        this.hasMore = true
+        search(this.query, this.page, this.showSinger, perpage).then((res) => {
           if (res.code === ERR_OK) {
               this.result = this._genResult(res.data)
-          } else {
-            return `${item.songname} - ${filterSinger(item.singer)}`
+              this._checkMore(res.data)
           }
+        })
+      },
+      searchMore() {
+        if (!this.hasMore) {
+          return
+        }
+        this.page++
+        search(this.query, this.page, this.showSinger, perpage).then((res) => {
+          this.result = this.result.concat(this._genResult(res.data))
+          this._checkMore(res.data)
         })
       },
       getDisplayName(item) {
         if (item.type === TYPE_SINGER) {
           return item.singername
         } else {
-
+            return `${item.name}-${item.singer}`
         }
       },
       getIconCls(item) {
@@ -63,25 +97,65 @@
           return 'icon-music'
         }
       },
+      selectItem(item) {
+        if (item.type === TYPE_SINGER) {
+          const singer = new Singer({
+            id: item.singermid,
+            name: item.singername
+          })
+          this.$router.push({
+            path: `/search/${singer.id}`
+          })
+          this.setSinger(singer)
+        } else {
+          this.insertSong(item)
+        }
+      },
+      listScroll() {
+        // 向上派发事件
+        this.$emit('listScroll')
+      },
+      _checkMore(data) {
+        const song = data.song
+        if (!song.list.length || (song.curnum + song.curpage * 20) > song.totalnum) {
+          this.hasMore = false
+        }
+      },
       _genResult(data) {
         let ret = []
-
         if (data.zhida && data.zhida.singerid) {
-          console.log("data.zhida:", data.zhi)
           ret.push({...data.zhida, ...{type: TYPE_SINGER}})
         }
         if (data.song) {
-          console.log("data.:", data)
-          ret = ret.concat(data.song.list)
+          ret = ret.concat(this._normalizeSongs(data.song.list))
         }
         return ret
-      }
+      },
+      _normalizeSongs(list) {
+        let ret = []
+        list.forEach((musicData) => {
+          if (musicData.songid && musicData.albumid) {
+            ret.push(createSong(musicData))
+          }
+        })
+        return ret
+      },
+      ...mapMutations({
+        setSinger: 'SET_SINGER'
+      }),
+      ...mapActions([
+        'insertSong'
+      ])
     },
     watch: {
       query() {
-        console.log("suggest.vue-queryChange")
         this.search()
       }
+    },
+    components: {
+      Scroll,
+      Loading,
+      NoResult
     }
   }
 </script>
