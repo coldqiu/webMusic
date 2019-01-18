@@ -9,7 +9,8 @@ const state = {
   mode: playMode.sequence,
   currentIndex: -1,
   disc: {},
-  topList: null
+  topList: null,
+  searchHistory: []
 
 }
 // 不需要currentSong, playlist+currentIndex=currentSong

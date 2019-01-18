@@ -110,6 +110,7 @@
         } else {
           this.insertSong(item)
         }
+        this.$emit('select')
       },
       listScroll() {
         // 向上派发事件
