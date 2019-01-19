@@ -1,14 +1,14 @@
+// 与缓存相关逻辑
+// 搜索历史，标记歌曲为喜欢，播放列表,播放历史等
+// 给不同的存储定义key
 import storage from 'good-storage'
+import { SET_SEARCH_HISTORY } from '../../store/mutation-types'
 
 const SEARCH_KEY = '__search__'
-const SEARCH_MAX_LEN = 15
-
-const PLAY_KEY = '__play__'
-const PLAY_MAX_LEN = 200
-
-const FAVORITE_KEY = '__favorite__'
-const FAVORITE_MAX_LEN = 200
-
+const SEARCH_MAX_LENGTH = 15
+// 数组最大长度为15；新增数据放在最前面；加入重复的数据，把旧数据删除，新数据放最前面；
+// compare 是比较函数
+// insertArray 插入方法
 function insertArray(arr, val, compare, maxLen) {
   const index = arr.findIndex(compare)
   if (index === 0) {
@@ -17,7 +17,8 @@ function insertArray(arr, val, compare, maxLen) {
   if (index > 0) {
     arr.splice(index, 1)
   }
-  arr.unshift(val)
+  // unshift() 放在数组的首部
+ arr.unshift(val)
   if (maxLen && arr.length > maxLen) {
     arr.pop()
   }
@@ -31,13 +32,19 @@ function deleteFromArray(arr, compare) {
 }
 
 export function saveSearch(query) {
-  let searches = storage.get(SEARCH_KEY, [])
+  let searches= storage.get(SEARCH_KEY, [])
   insertArray(searches, query, (item) => {
     return item === query
-  }, SEARCH_MAX_LEN)
+  }, SEARCH_MAX_LENGTH)
   storage.set(SEARCH_KEY, searches)
   return searches
 }
+
+// 为searchHistory获取本地数据，在state中赋值
+export function loadStorage() {
+  return storage.get(SEARCH_KEY, [])
+}
+
 
 export function deleteSearch(query) {
   let searches = storage.get(SEARCH_KEY, [])
@@ -52,43 +59,3 @@ export function clearSearch() {
   storage.remove(SEARCH_KEY)
   return []
 }
-
-export function loadSearch() {
-  return storage.get(SEARCH_KEY, [])
-}
-
-export function savePlay(song) {
-  let songs = storage.get(PLAY_KEY, [])
-  insertArray(songs, song, (item) => {
-    return song.id === item.id
-  }, PLAY_MAX_LEN)
-  storage.set(PLAY_KEY, songs)
-  return songs
-}
-
-export function loadPlay() {
-  return storage.get(PLAY_KEY, [])
-}
-
-export function saveFavorite(song) {
-  let songs = storage.get(FAVORITE_KEY, [])
-  insertArray(songs, song, (item) => {
-    return song.id === item.id
-  }, FAVORITE_MAX_LEN)
-  storage.set(FAVORITE_KEY, songs)
-  return songs
-}
-
-export function deleteFavorite(song) {
-  let songs = storage.get(FAVORITE_KEY, [])
-  deleteFromArray(songs, (item) => {
-    return item.id === song.id
-  })
-  storage.set(FAVORITE_KEY, songs)
-  return songs
-}
-
-export function loadFavorite() {
-  return storage.get(FAVORITE_KEY, [])
-}
-

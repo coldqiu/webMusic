@@ -116,6 +116,9 @@
         // 向上派发事件
         this.$emit('listScroll')
       },
+      refresh() {
+        this.$refs.suggest.refresh()
+      },
       _checkMore(data) {
         const song = data.song
         if (!song.list.length || (song.curnum + song.curpage * 20) > song.totalnum) {

@@ -1,4 +1,5 @@
 import {playMode} from 'common/js/config'
+import {loadStorage} from '../common/js/cache'
 
 const state = {
   singer: {},
@@ -10,7 +11,7 @@ const state = {
   currentIndex: -1,
   disc: {},
   topList: null,
-  searchHistory: []
+  searchHistory: loadStorage()
 
 }
 // 不需要currentSong, playlist+currentIndex=currentSong
